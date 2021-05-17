@@ -222,6 +222,8 @@ public class AppComponent {
                 }
             }
             else if (outPort.toLong() == (PortNumber.portNumber(5).toLong())) {
+                    flowObjectiveService.forward(deviceId, forwardingObjective);
+                    log.info("Flow rule applied for port 5");
                     context.treatmentBuilder().addTreatment(treatment);
                     context.send();
             }

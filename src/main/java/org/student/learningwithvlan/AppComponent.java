@@ -214,12 +214,11 @@ public class AppComponent {
                         log.info("MAC " + dstMac.toString() + " and port " + outPort.toLong() + " added to device " + deviceId.toString());
                         flowObjectiveService.forward(deviceId, forwardingObjective);
                         log.info("Flow rule applied ");
+                        context.treatmentBuilder().addTreatment(treatment);
+                        context.send();
                     }
                     else
                         log.info("Flow rule not applied");
-
-                    context.treatmentBuilder().addTreatment(treatment);
-                    context.send();
                 }
             }
             else if (outPort.toLong() == (PortNumber.portNumber(5).toLong())) {

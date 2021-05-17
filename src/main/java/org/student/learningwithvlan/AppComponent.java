@@ -206,9 +206,9 @@ public class AppComponent {
                 if (vlanTable.get(outPort).equals(vlanTable.get(srcPkt))){
                     log.info("----------> VLANs MATCH! (" + vlanTable.get(outPort).toString() + ")");
                     if (srcMac.toLong()%2==dstMac.toLong()%2) {
-                        //Small cheating. Without this if statement, a flow rule
-                        // from e.g. h1(S1) to an unknown h2(S3) would send the packets to port 3 where h3(S3) is and
-                        // that would mess up everything.
+                        //Small cheating. Without this if statement, a flow rule from e.g. h1(in S1) to an
+                        // uncertain h2(set to port 3,S2) would always send all packets to port 3 in S2 where
+                        // actually h3(port3, S2) is and that would mess up everything.
                         hostTable.put(dstMac, outPort);
                         switchTable.put(deviceId, hostTable);
                         log.info("MAC " + dstMac.toString() + " and port " + outPort.toLong() + " added to device " + deviceId.toString());

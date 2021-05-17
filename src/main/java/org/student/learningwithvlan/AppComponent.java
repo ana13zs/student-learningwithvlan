@@ -202,7 +202,7 @@ public class AppComponent {
                     }
             }
             if ((outPort.toLong() < 5) & (srcPkt.toLong()!=(PortNumber.portNumber(5).toLong()))) {
-                log.info("Packet originally from port " + srcPkt.toLong() + " set to port "+ outPort);
+                log.info("Packet originally from port " +srcPkt.toLong() + " set to port "+ outPort);
                 if (vlanTable.get(outPort).equals(vlanTable.get(srcPkt))){
                     log.info("----------> VLANs MATCH! (" + vlanTable.get(outPort).toString() + ")");
                     if (srcMac.toLong()%2==dstMac.toLong()%2) {

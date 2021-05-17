@@ -189,7 +189,7 @@ public class AppComponent {
                     .withPriority(5000)
                     .withFlag(ForwardingObjective.Flag.VERSATILE)
                     .fromApp(appId)
-                    .makeTemporary(10)
+                    .makeTemporary(30)
                     .add();
             log.info("SOURCE PORT: " + String.valueOf(srcPkt.toLong()));
             if (srcPkt.toLong()==(PortNumber.portNumber(5).toLong())) {

@@ -56,7 +56,7 @@ public class AppComponent {
 
     @Activate
     protected void activate() {
-        appId = coreService.registerApplication("org.student.learningswitch");
+        appId = coreService.registerApplication("org.student.learningwithvlan");
         TrafficSelector packetSelector = DefaultTrafficSelector.builder()
                 .matchEthType(Ethernet.TYPE_IPV4).build();
         packetService.requestPackets(packetSelector, PacketPriority.REACTIVE, appId);
@@ -202,7 +202,7 @@ public class AppComponent {
                     }
             }
             if ((outPort.toLong() < 5) & (srcPkt.toLong()!=(PortNumber.portNumber(5).toLong()))) {
-                log.info("Packet originally from port " +srcPkt.toLong() + " forwarded to port "+ outPort);
+                log.info("Packet originally from port " + srcPkt.toLong() + " set to port "+ outPort);
                 if (vlanTable.get(outPort).equals(vlanTable.get(srcPkt))){
                     log.info("----------> VLANs MATCH! (" + vlanTable.get(outPort).toString() + ")");
                     if (srcMac.toLong()%2==dstMac.toLong()%2) {
@@ -237,162 +237,3 @@ public class AppComponent {
         }
     }
 }
-
-//
-//
-//private class ReactivePacketProcessor implements PacketProcessor {
-//
-//    @Override
-//    public void process(PacketContext context) {
-//        InboundPacket pkt = context.inPacket();
-//        Ethernet ethPkt = pkt.parsed();
-//
-//        //Discard if  packet is null.
-//        if (ethPkt == null) {
-//            log.info("Discarding null packet");
-//            return;
-//        }
-//
-//        if(ethPkt.getEtherType() != Ethernet.TYPE_IPV4)
-//            return;
-//        log.info("Proccesing packet request RECEIVED FROM PORT: " + String.valueOf(pkt.receivedFrom().port().toLong()));
-//        // First step is to check if the packet came from a newly discovered switch.
-//        // Create a new entry if required.
-//        DeviceId deviceId = pkt.receivedFrom().deviceId();
-//        DeviceId otherDevice = deviceId.equals(DeviceId.deviceId("of:0000000000000001")) ? DeviceId.deviceId("of:0000000000000002") : DeviceId.deviceId("of:0000000000000001");
-//        if (!switchTable.containsKey(deviceId)){
-//            log.info("Adding new switch: " + deviceId.toString());
-//            ConcurrentHashMap<MacAddress, PortNumber> hostTable = new ConcurrentHashMap<>();
-//            switchTable.put(deviceId, hostTable);
-//        }
-//
-//        // Now lets check if the source host is a known host. If it is not add it to the switchTable.
-//        ConcurrentHashMap<MacAddress,PortNumber> hostTable = switchTable.get(deviceId);
-//        MacAddress srcMac = ethPkt.getSourceMAC();
-//        if (!hostTable.containsKey(srcMac)){
-//            hostTable.put(srcMac,pkt.receivedFrom().port());
-//            switchTable.replace(deviceId,hostTable);
-//        }
-//        log.info("TABLE1:" );
-//        if (switchTable.containsKey(DeviceId.deviceId(("of:0000000000000001"))))
-//            log.info("S1: " + switchTable.get(DeviceId.deviceId(("of:0000000000000001"))));
-//        if (switchTable.containsKey(DeviceId.deviceId(("of:0000000000000002"))))
-//            log.info("S2: " + switchTable.get(DeviceId.deviceId(("of:0000000000000002"))));
-//
-//        // To take care of loops, we must drop the packet if the port from which it came from does not match the
-//        // port that the source host should be attached to.
-//        if (!hostTable.get(srcMac).equals(pkt.receivedFrom().port())){
-//            log.info("Dropping packet to break loop");
-//            return;
-//        }
-//
-//        // Now lets check if we know the destination host. If we do, assign the correct output port.
-//        // By default set the port to FLOOD.
-//        MacAddress dstMac = ethPkt.getDestinationMAC();
-//        PortNumber outPort = PortNumber.FLOOD;
-//        log.info(("a ver..."));
-//        if (switchTable.get(otherDevice).containsKey(dstMac)) {
-//            log.info("we know the dst port");
-//            if (vlanTable.get(vlanTable.get(switchTable.get(deviceId).get(srcMac)))
-//                    .equals(vlanTable.get(switchTable.get(otherDevice).get(dstMac)))) {
-//                log.info("Also, src and dst vlans match");
-//                outPort = hostTable.get(dstMac);
-//                log.info("Setting output port to: " + outPort);
-//            }
-//            else {
-//                log.info("src and dst vlans DO NOT match");
-//            }
-//        }
-//        else {
-//            log.info("we do not know the dst port");
-//            switch ((int) pkt.receivedFrom().port().toLong()) {
-//                case 1:
-//                case 3:
-//                case 2:
-//                case 4:
-//                    outPort = PortNumber.portNumber("5");
-//                    log.info("Forwarding to the other switch");
-//
-//                    break;
-//                case 5:
-//                    switch ((int) srcMac.toLong()) {
-//                        case 1:
-//                            outPort = PortNumber.portNumber("3");
-//                            log.info("Setting output port to " + outPort.toLong());
-//                            break;
-//                        case 2:
-//                            outPort = PortNumber.portNumber("4");
-//                            log.info("Setting output port to " + outPort.toLong());
-//                            break;
-//                        case 3:
-//                            outPort = PortNumber.portNumber("1");
-//                            log.info("Setting output port to 1");
-//                            break;
-//                        case 4:
-//                            outPort = PortNumber.portNumber("2");
-//                            log.info("Setting output port to " + outPort.toLong());
-//                            break;
-//                        default:
-//                            break;
-//                    }
-//                    break;
-//                default:
-//                    break;
-//            }
-//        }
-//
-//        //Generate the traffic selector based on the packet that arrived.
-//        TrafficSelector packetSelector = DefaultTrafficSelector.builder()
-//                .matchEthType(Ethernet.TYPE_IPV4)
-//                .matchEthSrc(srcMac).build();
-//
-//        TrafficTreatment treatment = DefaultTrafficTreatment.builder()
-//                .setOutput(outPort).build();
-//
-//        ForwardingObjective forwardingObjective = DefaultForwardingObjective.builder()
-//                .withSelector(packetSelector)
-//                .withTreatment(treatment)
-//                .withPriority(5000)
-//                .withFlag(ForwardingObjective.Flag.VERSATILE)
-//                .fromApp(appId)
-//                .makeTemporary(10)
-//                .add();
-//        if (outPort != PortNumber.FLOOD)
-//            if (!outPort.equals(PortNumber.portNumber(5))) {
-////                DeviceId otherDevice = deviceId.equals(DeviceId.deviceId("of:0000000000000001")) ? DeviceId.deviceId("of:0000000000000002") : DeviceId.deviceId("of:0000000000000001");
-////                log.info("igual :" + String.valueOf(deviceId.equals(DeviceId.deviceId("of:0000000000000001"))));
-//                if (vlanTable.get(outPort).equals(vlanTable.get(switchTable.get(otherDevice).get(srcMac)))) {
-//                    log.info("VLANS MATCH!");
-//                    switchTable.put(deviceId, hostTable);
-//                    if (outPort.toLong()%2==switchTable.get(otherDevice).get(srcMac).toLong())
-//                    {
-//                        hostTable.put(dstMac, outPort);
-//                        flowObjectiveService.forward(deviceId, forwardingObjective);
-//                        log.info("Flow rule applied");
-//                    }
-//                    context.treatmentBuilder().addTreatment(treatment);
-//                    context.send();
-//                }
-//                else
-//                    log.info("VLANS DO NOT MATCH MWAHAHA");
-//            }
-//            else
-//            {
-//                log.info("port equals 5");
-//                context.treatmentBuilder().addTreatment(treatment);
-//                context.send();
-//            }
-//        log.info("TABLE 2:" );
-//        if (switchTable.containsKey(DeviceId.deviceId(("of:0000000000000001"))))
-//            log.info("S1: " + switchTable.get(DeviceId.deviceId(("of:0000000000000001"))));
-//        if (switchTable.containsKey(DeviceId.deviceId(("of:0000000000000002"))))
-//            log.info("S2: " + switchTable.get(DeviceId.deviceId(("of:0000000000000002"))));
-//        log.info(" ");
-//        log.info(" ");
-//        log.info(" ");
-//        log.info(" ");
-//        log.info(" ");
-//        log.info(" ");
-//    }
-//}
-//}
